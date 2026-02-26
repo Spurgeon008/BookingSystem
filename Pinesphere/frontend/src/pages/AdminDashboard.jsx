@@ -41,7 +41,7 @@ export default function AdminDashboard() {
   }, []);
 
   const deleteEvent = async (id) => {
-    if (!confirm("Delete this event? All associated bookings will also be removed.")) return;
+    if (!confirm("Delete this movie? All associated bookings will also be removed.")) return;
     try {
       await api.delete(`/admin/events/${id}`);
       toast.success("Event deleted");
@@ -72,7 +72,7 @@ export default function AdminDashboard() {
           className="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors shadow-md"
         >
           <MdAdd className="text-lg" />
-          Create Event
+          Create Movie
         </Link>
       </div>
 
@@ -131,7 +131,6 @@ export default function AdminDashboard() {
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
                   <th className="text-left px-5 py-3 font-medium">Event</th>
-                  <th className="text-left px-5 py-3 font-medium">Category</th>
                   <th className="text-left px-5 py-3 font-medium">Venue</th>
                   <th className="text-left px-5 py-3 font-medium">Date</th>
                   <th className="text-center px-5 py-3 font-medium">Seats</th>
@@ -143,7 +142,6 @@ export default function AdminDashboard() {
                 {events.map((ev) => (
                   <tr key={ev.id} className="hover:bg-gray-50">
                     <td className="px-5 py-3 font-medium text-gray-800">{ev.title}</td>
-                    <td className="px-5 py-3 text-gray-500 capitalize">{ev.category}</td>
                     <td className="px-5 py-3 text-gray-500">{ev.venue}</td>
                     <td className="px-5 py-3 text-gray-500">
                       {new Date(ev.event_date).toLocaleDateString("en-IN")}

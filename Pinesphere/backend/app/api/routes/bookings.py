@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import List
+import logging
 
 from app.db.session import get_db
 from app.models.booking import Booking
@@ -13,6 +14,8 @@ from app.schemas.booking import BookingCreate, BookingResponse
 from app.core.security import get_current_user
 from app.services.redis_client import redis_client
 from app.workers.tasks import send_booking_confirmation
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -149,8 +152,18 @@ def book_tickets(
     db.add(notification)
     db.commit()
 
-    # Send email via Celery
-    send_booking_confirmation.delay(new_booking.id, current_user.email)
+    # Send booking confirmation email via Celery background task
+    event_date_str = event.event_date.strftime("%d %b %Y, %I:%M %p") if event.event_date else "N/A"
+    send_booking_confirmation.delay(
+        booking_id=new_booking.id,
+        user_email=current_user.email,
+        event_title=event.title,
+        venue=event.venue,
+        event_date_str=event_date_str,
+        seats=seats_str,
+        num_seats=num_seats,
+        total_price=total_price,
+    )
 
     response = BookingResponse.model_validate(new_booking)
     response.event_title = event.title

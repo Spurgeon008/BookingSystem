@@ -50,7 +50,6 @@ def get_event_wise_bookings(db: Session = Depends(get_db)):
             event_id=event.id,
             event_title=event.title,
             event_date=event.event_date,
-            category=event.category,
             venue=event.venue,
             total_seats=event.total_seats,
             available_seats=event.available_seats,

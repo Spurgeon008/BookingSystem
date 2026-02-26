@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import SeatMap from "../components/SeatMap";
 import toast from "react-hot-toast";
-import { MdCalendarToday, MdLocationOn, MdCategory, MdConfirmationNumber } from "react-icons/md";
+import { MdCalendarToday, MdLocationOn, MdConfirmationNumber } from "react-icons/md";
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -23,7 +23,6 @@ export default function EventDetailPage() {
           const seatRes = await api.get(`/events/${id}/seats`);
           setSeatData(seatRes.data);
         } catch {
-          setSeatData({ booked_seats: [], locked_seats: [] });
           setSeatData({ booked_seats: [], locked_seats: [] });
         }
       } catch {
@@ -50,14 +49,12 @@ export default function EventDetailPage() {
       const detail = err.response?.data?.detail || "Booking failed";
       toast.error(detail, { duration: 5000 });
       try {
-      try {
         const [seatRes, eventRes] = await Promise.all([
           api.get(`/events/${id}/seats`),
           api.get(`/events/${id}`),
         ]);
         setSeatData(seatRes.data);
         setEvent(eventRes.data);
-        // Remove only the seats that are now booked/locked, keep the rest selected
         const unavailable = new Set([...seatRes.data.booked_seats, ...seatRes.data.locked_seats]);
         setSelectedSeats((prev) => prev.filter((s) => !unavailable.has(s)));
       } catch {
@@ -87,10 +84,16 @@ export default function EventDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Event Header */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
+          {event.poster_url && (
+            <img
+              src={event.poster_url}
+              alt={event.title}
+              className="w-full md:w-48 h-64 object-cover rounded-lg shrink-0"
+            />
+          )}
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-800">{event.title}</h1>
             <p className="text-gray-500 mt-2 max-w-xl">{event.description}</p>
 
@@ -110,10 +113,6 @@ export default function EventDetailPage() {
                 {event.venue}
               </span>
               <span className="flex items-center gap-1.5">
-                <MdCategory className="text-red-500" />
-                {event.category}
-              </span>
-              <span className="flex items-center gap-1.5">
                 <MdConfirmationNumber className="text-red-500" />
                 {event.available_seats} / {event.total_seats} seats available
               </span>
@@ -127,7 +126,6 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      {/* Seat Selection */}
       {event.available_seats > 0 ? (
         <>
           <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
@@ -149,7 +147,6 @@ export default function EventDetailPage() {
             )}
           </div>
 
-          {/* Booking Footer */}
           {selectedSeats.length > 0 && (
             <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow-lg rounded-t-xl p-4 -mx-4 px-8">
               <div className="max-w-5xl mx-auto flex items-center justify-between">

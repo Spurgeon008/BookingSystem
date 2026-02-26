@@ -17,7 +17,6 @@ EVENTS = [
     {
         "title": "Avengers: Endgame",
         "description": "The Avengers assemble for one final stand against Thanos in an epic conclusion to the Infinity Saga.",
-        "category": "movie",
         "venue": "PVR Cinemas - Screen 1",
         "price": 250.0,
         "rows": 8,
@@ -27,7 +26,6 @@ EVENTS = [
     {
         "title": "Inception",
         "description": "A skilled thief who infiltrates dreams is offered a chance to have his criminal record erased.",
-        "category": "movie",
         "venue": "INOX - Gold Screen",
         "price": 300.0,
         "rows": 6,
@@ -37,7 +35,6 @@ EVENTS = [
     {
         "title": "Interstellar",
         "description": "A team of explorers travel through a wormhole in space to ensure humanity's survival.",
-        "category": "movie",
         "venue": "Cinepolis - IMAX",
         "price": 450.0,
         "rows": 10,
@@ -47,7 +44,6 @@ EVENTS = [
     {
         "title": "The Dark Knight",
         "description": "Batman faces the Joker, a criminal mastermind who wants to plunge Gotham City into anarchy.",
-        "category": "movie",
         "venue": "PVR Cinemas - Screen 3",
         "price": 200.0,
         "rows": 10,
@@ -55,44 +51,13 @@ EVENTS = [
         "event_date": datetime(2026, 3, 3, 21, 0),
     },
     {
-        "title": "Coldplay: Music of the Spheres",
-        "description": "Coldplay live concert - Music of the Spheres World Tour.",
-        "category": "concert",
-        "venue": "DY Patil Stadium",
-        "price": 1500.0,
-        "rows": 15,
-        "seats_per_row": 20,
-        "event_date": datetime(2026, 3, 15, 18, 0),
-    },
-    {
-        "title": "Mumbai Express",
-        "description": "Premium AC bus service from Mumbai to Pune.",
-        "category": "bus",
-        "venue": "Mumbai Central Bus Stand",
-        "price": 350.0,
-        "rows": 10,
-        "seats_per_row": 4,
-        "event_date": datetime(2026, 3, 6, 7, 0),
-    },
-    {
-        "title": "Stand-Up Comedy Night",
-        "description": "An evening of laughter with top comedians performing live.",
-        "category": "show",
-        "venue": "Canvas Laugh Club",
-        "price": 500.0,
-        "rows": 5,
-        "seats_per_row": 8,
-        "event_date": datetime(2026, 3, 12, 20, 0),
-    },
-    {
         "title": "Oppenheimer",
         "description": "The story of J. Robert Oppenheimer and the creation of the atomic bomb.",
-        "category": "movie",
-        "venue": "INOX - Insignia",
+        "venue": "Cinepolis - Screen 5",
         "price": 350.0,
         "rows": 8,
         "seats_per_row": 10,
-        "event_date": datetime(2026, 3, 14, 19, 30),
+        "event_date": datetime(2026, 3, 15, 19, 30),
     },
 ]
 

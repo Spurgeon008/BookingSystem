@@ -1,6 +1,6 @@
-# 🎫 TicketBook - Event Booking Application
+# � TicketBook - Movie Ticket Booking Application
 
-A full-stack ticket booking platform built with FastAPI (Python) and React, featuring a BookMyShow-style seat selection interface, admin panel, Redis-based seat locking, and Celery background tasks.
+A full-stack movie ticket booking platform built with FastAPI (Python) and React, featuring a BookMyShow-style seat selection interface, admin panel, Redis-based seat locking, and Celery background tasks.
 
 ## Tech Stack
 
@@ -21,9 +21,8 @@ A full-stack ticket booking platform built with FastAPI (Python) and React, feat
 - Admin and regular user roles
 - Protected routes on both frontend and backend
 
-### 🎬 Events
-- Browse events by category (Movie, Concert, Show, Bus)
-- Search events by name or venue
+### 🎬 Movies
+- Browse movies and search by name or theatre
 - View seat availability in real-time
 
 ### 🪑 BookMyShow-style Seat Selection
@@ -38,7 +37,7 @@ A full-stack ticket booking platform built with FastAPI (Python) and React, feat
 
 ### 📊 Reports
 - Booking summary with total revenue
-- Event-wise report with category/venue breakdown
+- Event-wise report with venue breakdown
 - Personal booking history
 
 ### 🔔 Notifications
@@ -129,7 +128,7 @@ python -m scripts.insert_dummy_events
 
 This creates:
 - **Admin user**: `admin@ticketbooking.com` / `admin123`
-- **8 sample events** across movies, concerts, shows, and bus categories
+- **5 sample movies** at various theatres
 
 ### 4. Start Celery Worker
 

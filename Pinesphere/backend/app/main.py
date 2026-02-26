@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.db.session import engine
 from app.db.base import Base
+import os
 
 from app.models.user import User                  
 from app.models.event import Event                
@@ -38,3 +40,7 @@ app.include_router(bookings_router)
 app.include_router(admin_router)
 app.include_router(reports_router)
 app.include_router(notifications_router)
+
+uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "posters")
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")), name="uploads")

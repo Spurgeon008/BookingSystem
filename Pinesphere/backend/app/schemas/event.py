@@ -6,7 +6,6 @@ from typing import Optional, List
 class EventCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     description: str = Field(default="", max_length=2000)
-    category: str = Field(default="movie", max_length=50)
     venue: str = Field(default="Main Hall", max_length=255)
     price: float = Field(default=0.0, ge=0)
     poster_url: Optional[str] = None
@@ -18,7 +17,6 @@ class EventCreate(BaseModel):
 class EventUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
-    category: Optional[str] = None
     venue: Optional[str] = None
     price: Optional[float] = None
     poster_url: Optional[str] = None
@@ -29,7 +27,6 @@ class EventResponse(BaseModel):
     id: int
     title: str
     description: Optional[str] = None
-    category: str
     venue: str
     price: float
     poster_url: Optional[str] = None

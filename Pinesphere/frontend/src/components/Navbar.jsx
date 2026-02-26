@@ -22,7 +22,7 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const navLinks = [
-    { to: "/", label: "Events", icon: <MdOutlineMovie className="text-lg" /> },
+    { to: "/", label: "Movies", icon: <MdOutlineMovie className="text-lg" /> },
     { to: "/my-bookings", label: "My Bookings", icon: <HiOutlineTicket className="text-lg" /> },
     { to: "/reports", label: "Reports", icon: <HiOutlineChartBar className="text-lg" /> },
   ];

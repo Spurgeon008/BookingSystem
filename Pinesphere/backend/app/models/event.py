@@ -11,7 +11,6 @@ class Event(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    category = Column(String(50), nullable=False, default="movie")
     venue = Column(String(255), nullable=False, default="Main Hall")
     price = Column(Float, nullable=False, default=0.0)
     poster_url = Column(String(500), nullable=True)

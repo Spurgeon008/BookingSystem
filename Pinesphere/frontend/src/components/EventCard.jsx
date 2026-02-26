@@ -1,19 +1,4 @@
 import { Link } from "react-router-dom";
-import { MdOutlineMovie, MdDirectionsBus, MdTheaterComedy, MdMusicNote } from "react-icons/md";
-
-const categoryIcons = {
-  movie: <MdOutlineMovie className="text-red-400 text-xl" />,
-  bus: <MdDirectionsBus className="text-blue-400 text-xl" />,
-  show: <MdTheaterComedy className="text-purple-400 text-xl" />,
-  concert: <MdMusicNote className="text-pink-400 text-xl" />,
-};
-
-const categoryColors = {
-  movie: "bg-red-50 text-red-600",
-  bus: "bg-blue-50 text-blue-600",
-  show: "bg-purple-50 text-purple-600",
-  concert: "bg-pink-50 text-pink-600",
-};
 
 export default function EventCard({ event }) {
   const date = new Date(event.event_date);
@@ -29,13 +14,20 @@ export default function EventCard({ event }) {
       to={`/events/${event.id}`}
       className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-0.5"
     >
-      <div className="h-1.5 bg-gradient-to-r from-red-500 to-pink-500" />
+      {event.poster_url ? (
+        <img
+          src={event.poster_url}
+          alt={event.title}
+          className="w-full h-48 object-cover"
+        />
+      ) : (
+        <div className="h-1.5 bg-gradient-to-r from-red-500 to-pink-500" />
+      )}
 
       <div className="p-5">
         <div className="flex items-center justify-between mb-3">
-          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${categoryColors[event.category] || "bg-gray-50 text-gray-600"}`}>
-            {categoryIcons[event.category] || null}
-            {event.category}
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600">
+            Movie
           </span>
           <span className="text-lg font-bold text-gray-800">₹{event.price}</span>
         </div>

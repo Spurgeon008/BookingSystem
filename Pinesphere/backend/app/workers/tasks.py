@@ -6,55 +6,55 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(name="send_booking_confirmation")
-def send_booking_confirmation(booking_id: int, user_email: str):
-    from app.db.session import SessionLocal
-    from app.models.booking import Booking
-    from app.models.event import Event
+@celery_app.task(name="send_booking_confirmation", bind=True, max_retries=3, default_retry_delay=30)
+def send_booking_confirmation(
+    self,
+    booking_id: int,
+    user_email: str,
+    event_title: str,
+    venue: str,
+    event_date_str: str,
+    seats: str,
+    num_seats: int,
+    total_price: float,
+):
+    body = (
+        f"Booking Confirmation\n"
+        f"{'=' * 40}\n\n"
+        f"Booking ID  : #{booking_id}\n"
+        f"Event       : {event_title}\n"
+        f"Venue       : {venue}\n"
+        f"Date & Time : {event_date_str}\n"
+        f"Seats       : {seats}\n"
+        f"No. of Seats: {num_seats}\n"
+        f"Total Paid  : \u20b9{total_price:.2f}\n"
+        f"Status      : CONFIRMED\n\n"
+        f"Thank you for booking with us!\n\n"
+        f"\u2014 TicketBook Team"
+    )
 
-    db = SessionLocal()
-    try:
-        booking = db.query(Booking).filter(Booking.id == booking_id).first()
-        event = db.query(Event).filter(Event.id == booking.event_id).first() if booking else None
-    finally:
-        db.close()
+    subject = f"Booking Confirmed \u2013 #{booking_id}"
 
-    if booking and event:
-        event_date_str = event.event_date.strftime("%d %b %Y, %I:%M %p") if event.event_date else "N/A"
-        body = (
-            f"Booking Confirmation\n"
-            f"{'=' * 40}\n\n"
-            f"Booking ID  : #{booking.id}\n"
-            f"Event       : {event.title}\n"
-            f"Category    : {event.category.capitalize()}\n"
-            f"Venue       : {event.venue}\n"
-            f"Date & Time : {event_date_str}\n"
-            f"Seats       : {booking.seats}\n"
-            f"No. of Seats: {booking.num_seats}\n"
-            f"Total Paid  : ₹{booking.total_price:.2f}\n"
-            f"Status      : {booking.status.upper()}\n\n"
-            f"Thank you for booking with us. Enjoy the event!\n\n"
-            f"— Ticket Booking Team"
-        )
-    else:
-        body = (
-            f"Your booking (ID: #{booking_id}) has been confirmed.\n\n"
-            f"Please check your dashboard for full details.\n\n"
-            f"— Ticket Booking Team"
-        )
-
-    subject = f"Booking Confirmed – #{booking_id}"
     recipients = [user_email]
     if settings.ADMIN_EMAIL and settings.ADMIN_EMAIL != user_email:
         recipients.append(settings.ADMIN_EMAIL)
 
     logger.info(
-        "Sending booking confirmation — booking_id=%s, recipients=%s",
+        "Sending booking confirmation via Celery \u2014 booking_id=%s, recipients=%s",
         booking_id,
         recipients,
     )
 
-    send_email(to=recipients, subject=subject, body=body)
+    try:
+        send_email(to=recipients, subject=subject, body=body)
+        logger.info("Email sent for booking #%s to %s", booking_id, recipients)
+    except Exception as exc:
+        logger.error(
+            "Email send FAILED for booking #%s: %s",
+            booking_id,
+            exc,
+        )
+        raise self.retry(exc=exc)
 
     return {"status": "sent", "booking_id": booking_id, "recipients": recipients}
 

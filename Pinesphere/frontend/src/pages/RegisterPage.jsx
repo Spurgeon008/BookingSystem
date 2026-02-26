@@ -4,7 +4,7 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "", isAdmin: false });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -30,6 +30,7 @@ export default function RegisterPage() {
         name: form.name,
         email: form.email,
         password: form.password,
+        role: form.isAdmin ? "admin" : "user",
       });
       toast.success("Account created! Please sign in.");
       navigate("/login");
@@ -45,7 +46,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
-          <p className="text-gray-500 mt-2">Join us to start booking events</p>
+          <p className="text-gray-500 mt-2">Join us to start booking movies</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
@@ -91,6 +92,26 @@ export default function RegisterPage() {
               className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors"
               placeholder="Re-enter password"
             />
+          </div>
+
+          <div className="flex items-center justify-between mb-6 p-3 rounded-lg bg-gray-50 border border-gray-200">
+            <div>
+              <span className="text-sm font-medium text-gray-700">Admin Account</span>
+              <p className="text-xs text-gray-400 mt-0.5">Enable to manage movies & bookings</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, isAdmin: !form.isAdmin })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                form.isAdmin ? "bg-red-600" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  form.isAdmin ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
           </div>
 
           <button

@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
 import toast from "react-hot-toast";
-
-const categoryOptions = ["movie", "concert", "show", "bus"];
+import { MdCloudUpload, MdDelete } from "react-icons/md";
 
 export default function AdminCreateEvent() {
   const navigate = useNavigate();
@@ -14,7 +13,6 @@ export default function AdminCreateEvent() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    category: "movie",
     venue: "",
     price: "",
     poster_url: "",
@@ -24,6 +22,9 @@ export default function AdminCreateEvent() {
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [posterFile, setPosterFile] = useState(null);
+  const [posterPreview, setPosterPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (isEdit) {
@@ -34,7 +35,6 @@ export default function AdminCreateEvent() {
           setForm({
             title: data.title || "",
             description: data.description || "",
-            category: data.category || "movie",
             venue: data.venue || "",
             price: data.price?.toString() || "",
             poster_url: data.poster_url || "",
@@ -42,6 +42,7 @@ export default function AdminCreateEvent() {
             seats_per_row: data.seats_per_row?.toString() || "",
             event_date: data.event_date ? data.event_date.slice(0, 16) : "",
           });
+          if (data.poster_url) setPosterPreview(data.poster_url);
         })
         .catch(() => toast.error("Failed to load event"))
         .finally(() => setFetching(false));
@@ -49,6 +50,28 @@ export default function AdminCreateEvent() {
   }, [editId, isEdit]);
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+
+  const handlePosterSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (!["jpg", "jpeg"].includes(ext)) {
+      toast.error("Only JPG/JPEG files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be under 5MB");
+      return;
+    }
+    setPosterFile(file);
+    setPosterPreview(URL.createObjectURL(file));
+  };
+
+  const removePoster = () => {
+    setPosterFile(null);
+    setPosterPreview("");
+    setForm({ ...form, poster_url: "" });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,13 +81,11 @@ export default function AdminCreateEvent() {
       return;
     }
 
-    const payload = {
+    const payloadBase = {
       title: form.title,
       description: form.description,
-      category: form.category,
       venue: form.venue,
       price: parseFloat(form.price),
-      poster_url: form.poster_url || null,
       event_date: new Date(form.event_date).toISOString(),
     };
 
@@ -73,12 +94,30 @@ export default function AdminCreateEvent() {
         toast.error("Rows and seats per row are required for new events");
         return;
       }
-      payload.rows = parseInt(form.rows);
-      payload.seats_per_row = parseInt(form.seats_per_row);
+      payloadBase.rows = parseInt(form.rows);
+      payloadBase.seats_per_row = parseInt(form.seats_per_row);
     }
 
     setLoading(true);
     try {
+      let posterUrl = form.poster_url || null;
+
+      if (posterFile) {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("file", posterFile);
+        const uploadRes = await api.post("/admin/upload-poster", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        posterUrl = uploadRes.data.poster_url;
+        setUploading(false);
+      }
+
+      const payload = {
+        ...payloadBase,
+        poster_url: posterUrl,
+      };
+
       if (isEdit) {
         await api.put(`/admin/events/${editId}`, payload);
         toast.success("Event updated!");
@@ -110,7 +149,7 @@ export default function AdminCreateEvent() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">
-        {isEdit ? "Edit Event" : "Create New Event"}
+        {isEdit ? "Edit Movie" : "Create New Movie"}
       </h1>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm space-y-5">
@@ -134,39 +173,21 @@ export default function AdminCreateEvent() {
             onChange={update("description")}
             rows={3}
             className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none resize-none"
-            placeholder="Brief description of the event"
+            placeholder="Brief description of the movie"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Category <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={form.category}
-              onChange={update("category")}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none bg-white"
-            >
-              {categoryOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c.charAt(0).toUpperCase() + c.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Venue <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={form.venue}
-              onChange={update("venue")}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
-              placeholder="e.g. PVR Cinemas, Forum Mall"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Venue / Theatre <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={form.venue}
+            onChange={update("venue")}
+            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+            placeholder="e.g. PVR Cinemas, Forum Mall"
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -237,14 +258,35 @@ export default function AdminCreateEvent() {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Poster URL (optional)</label>
-          <input
-            type="url"
-            value={form.poster_url}
-            onChange={update("poster_url")}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
-            placeholder="https://..."
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Movie Poster (JPG/JPEG)</label>
+          {posterPreview ? (
+            <div className="relative w-full max-w-xs">
+              <img
+                src={posterPreview}
+                alt="Poster preview"
+                className="w-full h-64 object-cover rounded-lg border border-gray-200"
+              />
+              <button
+                type="button"
+                onClick={removePoster}
+                className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md"
+              >
+                <MdDelete className="text-lg" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-red-400 hover:bg-red-50 transition-colors">
+              <MdCloudUpload className="text-4xl text-gray-400 mb-2" />
+              <span className="text-sm text-gray-500">Click to upload poster</span>
+              <span className="text-xs text-gray-400 mt-1">JPG or JPEG only (max 5MB)</span>
+              <input
+                type="file"
+                accept=".jpg,.jpeg"
+                onChange={handlePosterSelect}
+                className="hidden"
+              />
+            </label>
+          )}
         </div>
 
         <div className="flex gap-3 pt-2">
@@ -253,7 +295,7 @@ export default function AdminCreateEvent() {
             disabled={loading}
             className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Saving…" : isEdit ? "Update Event" : "Create Event"}
+            {loading ? (uploading ? "Uploading poster…" : "Saving…") : isEdit ? "Update Movie" : "Create Movie"}
           </button>
           <button
             type="button"

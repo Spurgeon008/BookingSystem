@@ -16,9 +16,11 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
 
-    ADMIN_EMAIL: str = ""
     SMTP_EMAIL: str = ""
     SMTP_PASS: str = ""
+
+    # Admin email for booking notifications
+    ADMIN_EMAIL: str = ""
 
 
 settings = Settings()
