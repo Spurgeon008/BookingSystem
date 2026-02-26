@@ -16,11 +16,9 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
 
-    # Email (Mailtrap SDK)
-    MAILTRAP_API_TOKEN: str = ""
     ADMIN_EMAIL: str = ""
-    EMAIL_FROM: str = "noreply@ticketbook.com"
-    EMAIL_FROM_NAME: str = "TicketBook"
+    SMTP_EMAIL: str = ""
+    SMTP_PASS: str = ""
 
 
 settings = Settings()

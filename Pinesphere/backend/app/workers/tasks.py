@@ -11,9 +11,6 @@ def send_booking_confirmation(booking_id: int, user_email: str):
     from app.db.session import SessionLocal
     from app.models.booking import Booking
     from app.models.event import Event
-    from app.db.session import SessionLocal
-    from app.models.booking import Booking
-    from app.models.event import Event
 
     db = SessionLocal()
     try:

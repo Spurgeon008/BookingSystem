@@ -9,7 +9,7 @@ A full-stack ticket booking platform built with FastAPI (Python) and React, feat
 | **Backend** | Python 3.10, FastAPI, Uvicorn |
 | **Database** | PostgreSQL 15, SQLAlchemy 2.0, Alembic |
 | **Cache & Queue** | Redis 7, Celery 5 |
-| **Email** | Mailtrap SDK |
+| **Email** | Gmail SMTP (smtplib) |
 | **Frontend** | React 19, Vite 7, Tailwind CSS 4 |
 | **Auth** | JWT (python-jose), bcrypt |
 | **Infrastructure** | Docker, Docker Compose |
@@ -47,7 +47,7 @@ A full-stack ticket booking platform built with FastAPI (Python) and React, feat
 - Click-to-mark-as-read
 
 ### 📧 Email
-- Celery-powered async email delivery via Mailtrap
+- Celery-powered async email delivery via Gmail SMTP
 - Booking confirmation emails to users
 
 ## Project Structure
@@ -110,7 +110,9 @@ DATABASE_URL=postgresql://Manager:Spurgeon1414@localhost:5432/ticket_db
 SECRET_KEY=your-secret-key
 REDIS_HOST=localhost
 REDIS_PORT=6379
-MAILTRAP_TOKEN=your-mailtrap-token
+ADMIN_EMAIL=admin@yourdomain.com
+SMTP_EMAIL=your_gmail@gmail.com
+SMTP_PASS=your_gmail_app_password
 ```
 
 Run the server:
