@@ -1,0 +1,93 @@
+services:
+  
+  db:
+    image: postgres:15
+    container_name: ticket_db
+    restart: always
+    environment:
+      POSTGRES_USER: Manager
+      POSTGRES_PASSWORD: Spurgeon1414
+      POSTGRES_DB: ticket_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U Manager -d ticket_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  
+  redis:
+    image: redis:7-alpine
+    container_name: ticket_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ticket_backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql+psycopg2://Manager:Spurgeon1414@db:5432/ticket_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+  
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ticket_celery_worker
+    command: celery -A app.workers.celery_worker.celery_app worker --loglevel=info
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql+psycopg2://Manager:Spurgeon1414@db:5432/ticket_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+    container_name: ticket_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
