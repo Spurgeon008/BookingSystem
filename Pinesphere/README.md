@@ -105,7 +105,7 @@ pip install -r requirements.txt
 
 Create a `.env` file in `backend/`:
 ```env
-DATABASE_URL=postgresql://Manager:Spurgeon1414@localhost:5432/ticket_db
+DATABASE_URL=database_url
 SECRET_KEY=your-secret-key
 REDIS_HOST=localhost
 REDIS_PORT=6379
@@ -208,12 +208,3 @@ Frontend runs on `http://localhost:5173`
                  └──────────┘
 ```
 
-## Default Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@ticketbooking.com | admin123 |
-
----
-
-Built for **Pinesphere** placement assessment.
