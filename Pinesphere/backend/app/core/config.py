@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     
-    DATABASE_URL: str = "postgresql+psycopg2://Manager:Spurgeon1414@localhost:5432/ticket_db"
+    DATABASE_URL: str = ""
 
     
     SECRET_KEY: str = ""
