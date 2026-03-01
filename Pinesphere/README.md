@@ -1,6 +1,6 @@
-# 🎫 TicketBook - Event Booking Application
+# � TicketBook - Movie Ticket Booking Application
 
-A full-stack ticket booking platform built with FastAPI (Python) and React, featuring a BookMyShow-style seat selection interface, admin panel, Redis-based seat locking, and Celery background tasks.
+A full-stack movie ticket booking platform built with FastAPI (Python) and React, featuring a BookMyShow-style seat selection interface, admin panel, Redis-based seat locking, and Celery background tasks.
 
 ## Tech Stack
 
@@ -9,7 +9,7 @@ A full-stack ticket booking platform built with FastAPI (Python) and React, feat
 | **Backend** | Python 3.10, FastAPI, Uvicorn |
 | **Database** | PostgreSQL 15, SQLAlchemy 2.0, Alembic |
 | **Cache & Queue** | Redis 7, Celery 5 |
-| **Email** | Mailtrap SDK |
+| **Email** | Gmail SMTP (smtplib) |
 | **Frontend** | React 19, Vite 7, Tailwind CSS 4 |
 | **Auth** | JWT (python-jose), bcrypt |
 | **Infrastructure** | Docker, Docker Compose |
@@ -21,9 +21,8 @@ A full-stack ticket booking platform built with FastAPI (Python) and React, feat
 - Admin and regular user roles
 - Protected routes on both frontend and backend
 
-### 🎬 Events
-- Browse events by category (Movie, Concert, Show, Bus)
-- Search events by name or venue
+### 🎬 Movies
+- Browse movies and search by name or theatre
 - View seat availability in real-time
 
 ### 🪑 BookMyShow-style Seat Selection
@@ -38,7 +37,7 @@ A full-stack ticket booking platform built with FastAPI (Python) and React, feat
 
 ### 📊 Reports
 - Booking summary with total revenue
-- Event-wise report with category/venue breakdown
+- Event-wise report with venue breakdown
 - Personal booking history
 
 ### 🔔 Notifications
@@ -47,13 +46,14 @@ A full-stack ticket booking platform built with FastAPI (Python) and React, feat
 - Click-to-mark-as-read
 
 ### 📧 Email
-- Celery-powered async email delivery via Mailtrap
+- Celery-powered async email delivery via Gmail SMTP
 - Booking confirmation emails to users
 
 ## Project Structure
 
 ```
 Pinesphere/
+├── docker-compose.yml        # Single command to run everything
 ├── backend/
 │   ├── app/
 │   │   ├── api/routes/       # auth, events, bookings, admin, reports, notifications
@@ -66,7 +66,6 @@ Pinesphere/
 │   │   └── main.py
 │   ├── alembic/              # DB migrations
 │   ├── scripts/              # Seed data
-│   ├── docker-compose.yml
 │   ├── Dockerfile
 │   └── requirements.txt
 │
@@ -85,66 +84,36 @@ Pinesphere/
 
 ### Prerequisites
 - Docker & Docker Compose
-- Node.js 18+ and npm
-- Python 3.10+ (if running outside Docker)
 
-### 1. Start Infrastructure (PostgreSQL + Redis)
+### Run the Application
 
-```bash
-cd backend
-sudo docker compose up -d db redis
-```
-
-### 2. Backend Setup
+Everything (PostgreSQL, Redis, Backend, Celery Worker, Frontend) runs with a single command:
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+docker compose up --build
 ```
 
-Create a `.env` file in `backend/`:
-```env
-DATABASE_URL=postgresql://Manager:Spurgeon1414@localhost:5432/ticket_db
-SECRET_KEY=your-secret-key
-REDIS_HOST=localhost
-REDIS_PORT=6379
-MAILTRAP_TOKEN=your-mailtrap-token
-```
+This will start:
+- **PostgreSQL** on port `5432`
+- **Redis** on port `6379`
+- **Backend (FastAPI)** on `http://localhost:8000`
+- **Celery Worker** for background email tasks
+- **Frontend (React)** on `http://localhost:80`
 
-Run the server:
+To run in detached mode:
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+docker compose up --build -d
 ```
 
-### 3. Seed Database
-
+To stop all services:
 ```bash
-cd backend
-python -m scripts.insert_dummy_events
+docker compose down
 ```
 
-This creates:
-- **Admin user**: `admin@ticketbooking.com` / `admin123`
-- **8 sample events** across movies, concerts, shows, and bus categories
-
-### 4. Start Celery Worker
-
+To stop and remove all data (volumes):
 ```bash
-cd backend
-celery -A app.workers.celery_worker worker --loglevel=info
+docker compose down -v
 ```
-
-### 5. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs on `http://localhost:5173`
 
 ## API Endpoints
 
@@ -172,10 +141,6 @@ Frontend runs on `http://localhost:5173`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/admin/events` | Create event |
-| PUT | `/admin/events/{id}` | Update event |
-| DELETE | `/admin/events/{id}` | Delete event |
-| GET | `/admin/bookings` | All bookings |
-| GET | `/admin/stats` | Dashboard stats |
 
 ### Reports
 | Method | Endpoint | Description |
@@ -188,31 +153,4 @@ Frontend runs on `http://localhost:5173`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/notifications/` | Get user's notifications |
-| PUT | `/notifications/{id}/read` | Mark as read |
-
-## Architecture
-
-```
-┌──────────┐     ┌──────────┐     ┌─────────────┐
-│  React   │────▶│  FastAPI  │────▶│ PostgreSQL  │
-│ Frontend │     │  Backend  │     │  Database   │
-└──────────┘     └─────┬────┘     └─────────────┘
-                       │
-                 ┌─────┴────┐
-                 │  Redis   │── Seat locking (5min TTL)
-                 └─────┬────┘
-                       │
-                 ┌─────┴────┐
-                 │  Celery  │── Email notifications
-                 └──────────┘
-```
-
-## Default Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@ticketbooking.com | admin123 |
-
----
-
-Built for **Pinesphere** placement assessment.
+| PUT | `/notifications/{id}/read` | Mark as read | 

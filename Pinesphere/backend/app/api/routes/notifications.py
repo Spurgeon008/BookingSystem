@@ -19,7 +19,7 @@ def get_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get all notifications for the current user (newest first)."""
+
     return (
         db.query(Notification)
         .filter(Notification.user_id == current_user.id)
@@ -34,7 +34,7 @@ def get_unread_count(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get count of unread notifications."""
+   
     count = (
         db.query(Notification)
         .filter(Notification.user_id == current_user.id, Notification.is_read == False)
@@ -49,7 +49,7 @@ def mark_as_read(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Mark a single notification as read."""
+    
     notif = (
         db.query(Notification)
         .filter(Notification.id == notification_id, Notification.user_id == current_user.id)
@@ -66,7 +66,7 @@ def mark_all_as_read(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Mark all notifications as read."""
+    
     db.query(Notification).filter(
         Notification.user_id == current_user.id,
         Notification.is_read == False,

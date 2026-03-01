@@ -74,7 +74,7 @@ export default function ReportsPage() {
             </div>
             <div className="bg-green-50 rounded-xl p-6 text-center">
               <div className="text-3xl font-bold text-green-700">{summary.total_events}</div>
-              <div className="text-sm text-green-500 mt-1">Events Available</div>
+              <div className="text-sm text-green-500 mt-1">Movies Available</div>
             </div>
             <div className="bg-yellow-50 rounded-xl p-6 text-center">
               <div className="text-3xl font-bold text-yellow-700">
@@ -90,14 +90,13 @@ export default function ReportsPage() {
       {tab === "events" && (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {eventWise.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">No event data available</div>
+            <div className="text-center py-16 text-gray-400">No movie data available</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-gray-600">
                   <tr>
                     <th className="text-left px-5 py-3 font-medium">Event</th>
-                    <th className="text-left px-5 py-3 font-medium">Category</th>
                     <th className="text-left px-5 py-3 font-medium">Venue</th>
                     <th className="text-center px-5 py-3 font-medium">Bookings</th>
                     <th className="text-right px-5 py-3 font-medium">Revenue</th>
@@ -107,7 +106,6 @@ export default function ReportsPage() {
                   {eventWise.map((ev, i) => (
                     <tr key={i} className="hover:bg-gray-50">
                       <td className="px-5 py-3 font-medium text-gray-800">{ev.event_title}</td>
-                      <td className="px-5 py-3 text-gray-500 capitalize">{ev.category}</td>
                       <td className="px-5 py-3 text-gray-500">{ev.venue}</td>
                       <td className="px-5 py-3 text-center">{ev.booking_count}</td>
                       <td className="px-5 py-3 text-right font-medium">

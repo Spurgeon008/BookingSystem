@@ -46,6 +46,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - poster_uploads:/app/uploads
     env_file:
       - ./backend/.env
     environment:
@@ -53,6 +54,9 @@ services:
       - DATABASE_URL=postgresql+psycopg2://Manager:Spurgeon1414@db:5432/ticket_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - SMTP_EMAIL=johnspurgeon820@gmail.com
+      - SMTP_PASS=ccmf ruts btgd xoyp
+      - ADMIN_EMAIL=johnspurgeon820@gmail.com
   
   celery:
     build:
@@ -68,6 +72,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
+      - poster_uploads:/app/uploads
     env_file:
       - ./backend/.env
     environment:
@@ -75,6 +80,9 @@ services:
       - DATABASE_URL=postgresql+psycopg2://Manager:Spurgeon1414@db:5432/ticket_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - SMTP_EMAIL=johnspurgeon820@gmail.com
+      - SMTP_PASS=ccmf ruts btgd xoyp
+      - ADMIN_EMAIL=johnspurgeon820@gmail.com
   
   frontend:
     build:
@@ -91,3 +99,4 @@ services:
 
 volumes:
   postgres_data:
+  poster_uploads:

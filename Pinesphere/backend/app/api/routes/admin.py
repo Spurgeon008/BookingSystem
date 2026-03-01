@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
+import os
+import uuid
 
 from app.db.session import get_db
 from app.models.event import Event
@@ -14,6 +16,29 @@ from app.core.security import get_admin_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg"}
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "uploads", "posters")
+
+
+@router.post("/upload-poster")
+def upload_poster(
+    file: UploadFile = File(...),
+    admin: User = Depends(get_admin_user),
+):
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only JPG/JPEG files are allowed")
+
+    filename = f"{uuid.uuid4().hex}{ext}"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+    with open(filepath, "wb") as f:
+        f.write(file.file.read())
+
+    poster_url = f"/uploads/posters/{filename}"
+    return {"poster_url": poster_url}
+
 
 @router.post("/events", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
 def create_event(
@@ -25,7 +50,6 @@ def create_event(
     new_event = Event(
         title=event_data.title,
         description=event_data.description,
-        category=event_data.category,
         venue=event_data.venue,
         price=event_data.price,
         poster_url=event_data.poster_url,

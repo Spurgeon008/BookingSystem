@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import List
+import logging
 
 from app.db.session import get_db
 from app.models.booking import Booking
@@ -13,6 +14,8 @@ from app.schemas.booking import BookingCreate, BookingResponse
 from app.core.security import get_current_user
 from app.services.redis_client import redis_client
 from app.workers.tasks import send_booking_confirmation
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -38,7 +41,6 @@ def book_tickets(
     if event.available_seats < num_seats:
         raise HTTPException(status_code=400, detail="Not enough seats available")
 
-    # Validate seat labels
     for seat in booking_data.seats:
         if len(seat) < 2:
             raise HTTPException(status_code=400, detail=f"Invalid seat label: {seat}")
@@ -53,10 +55,10 @@ def book_tickets(
         if seat_num < 1 or seat_num > event.seats_per_row:
             raise HTTPException(status_code=400, detail=f"Invalid seat number: {seat}")
 
-    # Lock all seats via Redis
+    
     locked_keys = []
     try:
-        # Pre-check which seats are already booked in DB
+        
         already_booked = (
             db.query(BookedSeat.seat_label)
             .filter(
@@ -76,7 +78,7 @@ def book_tickets(
             lock_key = _seat_lock_key(event.id, seat.upper())
             acquired = redis_client.set(lock_key, str(current_user.id), nx=True, ex=SEAT_LOCK_EXPIRY)
             if not acquired:
-                # Check if locked by same user (allow re-lock)
+                
                 owner = redis_client.get(lock_key)
                 if owner != str(current_user.id):
                     raise HTTPException(
@@ -85,7 +87,7 @@ def book_tickets(
                     )
             locked_keys.append(lock_key)
 
-        # Create booking
+        
         seats_str = ",".join(s.upper() for s in booking_data.seats)
         total_price = num_seats * event.price
 
@@ -100,7 +102,7 @@ def book_tickets(
 
         try:
             db.add(new_booking)
-            db.flush()  # get booking id
+            db.flush()
 
             for seat in booking_data.seats:
                 booked_seat = BookedSeat(
@@ -116,7 +118,7 @@ def book_tickets(
 
         except IntegrityError:
             db.rollback()
-            # Find which seats were taken in the race condition
+            
             conflicting = (
                 db.query(BookedSeat.seat_label)
                 .filter(
@@ -136,11 +138,11 @@ def book_tickets(
             redis_client.delete(key)
         raise
 
-    # Release locks after successful booking
+    
     for key in locked_keys:
         redis_client.delete(key)
 
-    # Create notification
+    
     notification = Notification(
         user_id=current_user.id,
         title="Booking Confirmed",
@@ -149,8 +151,18 @@ def book_tickets(
     db.add(notification)
     db.commit()
 
-    # Send email via Celery
-    send_booking_confirmation.delay(new_booking.id, current_user.email)
+    
+    event_date_str = event.event_date.strftime("%d %b %Y, %I:%M %p") if event.event_date else "N/A"
+    send_booking_confirmation.delay(
+        booking_id=new_booking.id,
+        user_email=current_user.email,
+        event_title=event.title,
+        venue=event.venue,
+        event_date_str=event_date_str,
+        seats=seats_str,
+        num_seats=num_seats,
+        total_price=total_price,
+    )
 
     response = BookingResponse.model_validate(new_booking)
     response.event_title = event.title

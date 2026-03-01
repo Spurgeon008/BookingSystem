@@ -15,7 +15,6 @@ class EventBookingReport(BaseModel):
     event_id: int
     event_title: str
     event_date: Optional[datetime] = None
-    category: str
     venue: str
     total_seats: int
     available_seats: int
